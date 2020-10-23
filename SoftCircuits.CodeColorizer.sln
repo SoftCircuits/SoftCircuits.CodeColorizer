@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30517.126
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SoftCircuits.CodeColorizer", "SoftCircuits.CodeColorizer\SoftCircuits.CodeColorizer.csproj", "{9D36608F-403E-4FCC-87C6-BF9E04ACFC76}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeColorizerTests", "CodeColorizerTests\CodeColorizerTests.csproj", "{FFCD4462-BB8D-4D33-BD52-8A34AE7A7D25}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DE9EEEA8-44ED-4878-94BF-5DAB200C4F81}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9D36608F-403E-4FCC-87C6-BF9E04ACFC76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D36608F-403E-4FCC-87C6-BF9E04ACFC76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D36608F-403E-4FCC-87C6-BF9E04ACFC76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D36608F-403E-4FCC-87C6-BF9E04ACFC76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FFCD4462-BB8D-4D33-BD52-8A34AE7A7D25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFCD4462-BB8D-4D33-BD52-8A34AE7A7D25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFCD4462-BB8D-4D33-BD52-8A34AE7A7D25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFCD4462-BB8D-4D33-BD52-8A34AE7A7D25}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FE59FCCA-DDBA-47AB-B045-84066C6890D6}
+	EndGlobalSection
+EndGlobal
