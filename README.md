@@ -33,7 +33,7 @@ The XML file contains the following elements.
 
 ## Usage
 
-The following example loads the language rules file from "LanguageRules.xml". It then creates an instance of `Colorizer` and sets it's CSS class properties. These properties hold the names of the CSS classes used to style each element of the language. Finally, the code calls the `Colorize()` method to convert the input to HTML.
+The following example loads the language rules from the file "LanguageRules.xml". It then creates an instance of `CodeColorizer` and sets it's CSS class properties. These properties hold the names of the CSS classes used to style each element of the language. Finally, the code calls the `Transform()` method to convert the input to HTML.
 
 ```cs
 LanguageRulesCollection Languages = new LanguageRulesCollection();
