@@ -13,9 +13,10 @@ Install-Package SoftCircuits.CodeColorizer
 Code Colorizer is a .NET class library to convert source code to HTML with syntax coloring. The library is language-agnostic, meaning that the the same code is used for all supported languages. Only the language rules change for each language.
 
 ## Language Rules
-The library stored the definition for each language in an XML file. A sample definitions file (LanguageRules.xml) is included with the project. See this file for exact structure. The LanguageRules class reads this file. It can also create and modify language rules and then save those changes back to this file.
 
-For each language defined, the following rules are specified.
+Each language is defined by creating a `LanguageRules` object that describes the language. The `LanguageRulesCollection` can store the rules for any number of languages, and read and write them to an XML file using the `Save()` and `Load()` methods. A link to a sample XML file is down below. I can give you a head start on defining the languages you want to support.
+
+The XML file contains the following elements.
 
 | Rule | Purpose
 | ---- | ----
@@ -30,21 +31,26 @@ For each language defined, the following rules are specified.
 | keywords | Lists all the keywords supported by this language.
 | symbols | Lists all the symbol names supported by this language. For example, the names of custom types (those not defined by the language itself) could be included in this list. Because this list could be incredibly long and require frequent updates, it is often not used.
 
-## Example
+## Usage
+
 The following example loads the language rules file from "LanguageRules.xml". It then creates an instance of `Colorizer` and sets it's CSS class properties. These properties hold the names of the CSS classes used to style each element of the language. Finally, the code calls the `Colorize()` method to convert the input to HTML.
 
-```csharp
+```cs
 LanguageRulesCollection Languages = new LanguageRulesCollection();
 Languages.Load("LanguageRules.xml");
 
-Colorizer colorizer = new Colorizer();
-colorizer.CssClassComment = "Comment_Class";
-colorizer.CssClassKeyword = "Keyword_Class";
-colorizer.CssClassOperator = "Operator_Class";
-colorizer.CssClassString = "String_Class";
-colorizer.CssClassSymbol = "Symbol_Class";
-string html = colorizer.Colorize(sourceCode, Languages["cs"]);
+CodeColorizer colorizer = new CodeColorizer(Languages["cs"]);
+colorizer.CommentCssClass = "Comment_Class";
+colorizer.KeywordCssClass = "Keyword_Class";
+colorizer.OperatorCssClass = "Operator_Class";
+colorizer.StringCssClass = "String_Class";
+colorizer.SymbolCssClass = "Symbol_Class";
+string html = colorizer.Transform(sourceCode);
 ```
+
+The code above creates a `CodeColorizer` instance, passing one of the languages stored in a `LanguageRulesCollection`. It then defines the CSS class names for each token type. Finally, it calls the `Transform()` method to convert the source code.
+
+The resulting output will be the source code will markup added to implement the class names specified in the previous step. In addition, the output will be HTML encoded. The output is formatted to appear correctly when placed within a `<pre>...</pre>` block on a web page.
 
 ## Resources
 
