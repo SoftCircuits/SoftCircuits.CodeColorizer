@@ -54,7 +54,7 @@ The resulting output will be the source code will markup added to implement the 
 
 ## Resources
 
-- [Sample LanguageRules File](Languages.xml)
+- [Sample LanguageRules File](/LanguageRules.xml)
 
 ## More Information
 For additional information and a discussion of the source code, please see my article [Colorizing Source Code](http://www.blackbeltcoder.com/Articles/strings/colorizing-source-code).
