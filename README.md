@@ -33,7 +33,7 @@ The XML file contains the following elements.
 
 ## Usage
 
-The following example loads the language rules from the file "LanguageRules.xml". It then creates an instance of `CodeColorizer` and sets it's CSS class properties. These properties hold the names of the CSS classes used to style each element of the language. Finally, the code calls the `Transform()` method to convert the input to HTML.
+The following example loads the language rules from the file "LanguageRules.xml". It then creates a `CodeColorizer` instance, passing one of the languages stored in the `LanguageRulesCollection` to the `CodeColorizer` constructor. It then defines the CSS class names for each token type. Finally, it calls the `Transform()` method to convert the source code.
 
 ```cs
 LanguageRulesCollection Languages = new LanguageRulesCollection();
@@ -48,9 +48,7 @@ colorizer.SymbolCssClass = "Symbol_Class";
 string html = colorizer.Transform(sourceCode);
 ```
 
-The code above creates a `CodeColorizer` instance, passing one of the languages stored in a `LanguageRulesCollection`. It then defines the CSS class names for each token type. Finally, it calls the `Transform()` method to convert the source code.
-
-The resulting output will be the source code will markup added to implement the class names specified in the previous step. In addition, the output will be HTML encoded. The output is formatted to appear correctly when placed within a `<pre>...</pre>` block on a web page.
+The resulting output above will be the source code with markup added to implement the CSS classes that were specified. In addition, the output will be HTML encoded. The output is formatted to appear correctly when placed within a `<pre>...</pre>` block on a web page.
 
 ## Resources
 
