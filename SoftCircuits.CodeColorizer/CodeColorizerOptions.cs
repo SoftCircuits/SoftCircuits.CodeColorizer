@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2020 Jonathan Wood (www.softcircuits.com)
+﻿// Copyright (c) 2020-2021 Jonathan Wood (www.softcircuits.com)
 // Licensed under the MIT license.
 //
 
@@ -21,5 +21,13 @@ namespace SoftCircuits.CodeColorizer
         /// symbols.
         /// </summary>
         public bool UnclassifiedDefaultToSymbols { get; set; }
+
+        /// <summary>
+        /// Constructs a new <see cref="CodeColorizerOptions"/> instance.
+        /// </summary>
+        public CodeColorizerOptions()
+        {
+            TokenFormat = string.Empty;
+        }
     }
 }

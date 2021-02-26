@@ -1,22 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFrameworks>net5.0;netstandard2.0</TargetFrameworks>
+    <Nullable>annotations</Nullable>
+    <Nullable Condition="'$(TargetFramework)' == 'net5.0'">enable</Nullable>
+    <LangVersion>9.0</LangVersion>
     <Authors>Jonathan Wood</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Company>SoftCircuits</Company>
-    <Copyright>Copyright © 2020 SoftCircuits</Copyright>
+    <Copyright>Copyright © 2020-2021 SoftCircuits</Copyright>
     <PackageProjectUrl>https://github.com/SoftCircuits/CodeColorizer</PackageProjectUrl>
     <PackageIcon>Logo_64x64.png</PackageIcon>
     <RepositoryUrl>https://github.com/SoftCircuits/CodeColorizer</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>code source-code code-colorizer syntax-highlighter syntax colorizer</PackageTags>
-    <PackageReleaseNotes>Initial version.</PackageReleaseNotes>
+    <PackageReleaseNotes>Library now targets either .NET 5.0 or .NET Standard 2.0 and supports nullable reference types.</PackageReleaseNotes>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <Description>Code Colorizer is a .NET class library to convert source code to HTML with syntax coloring. The library is language-agnostic, meaning that the the same code is used for all supported languages. Only the language rules change for each language.</Description>
+    <Description>Code Colorizer is a .NET class library to convert source code to HTML with syntax coloring. The library is language-agnostic, meaning that the the same code is used for all supported languages. Only the language rules change for each language. Library now targets either .NET 5.0 or .NET Standard 2.0 and supports nullable reference types.</Description>
     <Product>CodeColorizer</Product>
     <PackageLicenseFile>License.txt</PackageLicenseFile>
+    <Version>2.0.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

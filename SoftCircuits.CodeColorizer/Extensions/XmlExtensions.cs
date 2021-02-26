@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2020 Jonathan Wood (www.softcircuits.com)
+﻿// Copyright (c) 2020-2021 Jonathan Wood (www.softcircuits.com)
 // Licensed under the MIT license.
 //
 
@@ -12,22 +12,22 @@ namespace SoftCircuits.CodeColorizer.Extensions
     /// </summary>
     internal static class XmlExtensions
     {
-        public static string GetValue(this XmlElement element, string defaultValue = default(string))
+        public static string? GetValue(this XmlElement? element, string? defaultValue = default)
         {
             return element?.InnerText?.Trim() ?? defaultValue;
         }
 
-        public static bool GetBoolValue(this XmlElement element, bool defaultValue = default(bool))
+        public static bool GetBoolValue(this XmlElement? element, bool defaultValue = default)
         {
             return ParseBoolean(element?.InnerText?.Trim(), defaultValue);
         }
 
-        public static string GetValue(this XmlAttribute attribute, string defaultValue = default(string))
+        public static string? GetValue(this XmlAttribute? attribute, string? defaultValue = default)
         {
             return attribute?.Value?.Trim() ?? defaultValue;
         }
 
-        private static bool ParseBoolean(string s, bool defaultValue)
+        private static bool ParseBoolean(string? s, bool defaultValue)
         {
             return !string.IsNullOrWhiteSpace(s) ? IsTrue(s) : defaultValue;
         }

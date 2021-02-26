@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2020 Jonathan Wood (www.softcircuits.com)
+﻿// Copyright (c) 2020-2021 Jonathan Wood (www.softcircuits.com)
 // Licensed under the MIT license.
 //
 
@@ -17,53 +17,53 @@ namespace SoftCircuits.CodeColorizer
     /// </summary>
     public class CodeColorizer
     {
-        private ParsingHelper Helper;
+        private readonly ParsingHelper Helper;
 
         #region Private language settings
 
         /// <summary>
         /// Characters legal in keyword and symbol names.
         /// </summary>
-        private HashSet<char> SymbolChars;
+        private HashSet<char>? SymbolChars;
 
         /// <summary>
         /// Characters legal as first character in keyword and symbol names.
         /// </summary>
-        private HashSet<char> SymbolFirstChars;
+        private HashSet<char>? SymbolFirstChars;
 
         /// <summary>
         /// Characters that make up this language's operators. Must include characters
         /// used to define comments.
         /// </summary>
-        private HashSet<char> OperatorChars;
+        private HashSet<char>? OperatorChars;
 
         /// <summary>
         /// List of keywords for the current language.
         /// </summary>
-        private HashSet<string> Keywords;
+        private HashSet<string>? Keywords;
 
         /// <summary>
         /// List of symbols for the current language.
         /// </summary>
-        private HashSet<string> Symbols;
+        private HashSet<string>? Symbols;
 
         /// <summary>
         /// List of block-comment specifiers for this language.
         /// </summary>
-        private List<BlockCommentInfo> BlockComments;
+        private List<BlockCommentInfo>? BlockComments;
 
         /// <summary>
         /// List of line-comment specifiers for this language.
         /// </summary>
-        private List<string> LineComments;
+        private List<string>? LineComments;
 
         /// <summary>
         /// List of quote specifiers for this language.
         /// </summary>
-        private List<QuoteInfo> Quotes;
+        private List<QuoteInfo>? Quotes;
 
-        internal CharComparer CharComparer { get; private set; }
-        internal StringComparer StringComparer { get; private set; }
+        internal CharComparer? CharComparer { get; private set; }
+        internal StringComparer? StringComparer { get; private set; }
         internal StringComparison StringComparison { get; private set; }
 
         #endregion
@@ -76,27 +76,27 @@ namespace SoftCircuits.CodeColorizer
         /// <summary>
         /// Gets or sets the class name applied to keywords.
         /// </summary>
-        public string KeywordCssClass { get; set; }
+        public string? KeywordCssClass { get; set; }
 
         /// <summary>
         /// Gets or sets the class name applied to symbols.
         /// </summary>
-        public string SymbolCssClass { get; set; }
+        public string? SymbolCssClass { get; set; }
 
         /// <summary>
         /// Gets or sets the class name applied to string literals.
         /// </summary>
-        public string StringCssClass { get; set; }
+        public string? StringCssClass { get; set; }
 
         /// <summary>
         /// Gets or sets the class name applied to operators.
         /// </summary>
-        public string OperatorCssClass { get; set; }
+        public string? OperatorCssClass { get; set; }
 
         /// <summary>
         /// Gets or sets the class name applied to comments.
         /// </summary>
-        public string CommentCssClass { get; set; }
+        public string? CommentCssClass { get; set; }
 
         /// <summary>
         /// Initializes a new <see cref="CodeColorizer"/> instance.
@@ -106,6 +106,7 @@ namespace SoftCircuits.CodeColorizer
         /// constructor will not be observed.</param>
         public CodeColorizer(LanguageRules rules)
         {
+            Helper = new ParsingHelper(null);
             Options = new CodeColorizerOptions
             {
                 TokenFormat = "<span class=\"{1}\">{0}</span>",
@@ -176,7 +177,7 @@ namespace SoftCircuits.CodeColorizer
         /// <returns>The transformed source code.</returns>
         public string Transform(string sourceCode)
         {
-            Dictionary<TokenType, string> cssClassLookup = new Dictionary<TokenType, string>
+            Dictionary<TokenType, string?> cssClassLookup = new Dictionary<TokenType, string?>
             {
                 [TokenType.Keyword] = KeywordCssClass,
                 [TokenType.Symbol] = SymbolCssClass,
@@ -186,12 +187,12 @@ namespace SoftCircuits.CodeColorizer
             };
 
             Debug.Assert(Options != null);
-            Helper = new ParsingHelper(sourceCode);
+            Helper.Reset(sourceCode);
             StringBuilder builder = new StringBuilder();
             for (LanguageToken token = ParseNext(); token.Type != TokenType.EndOfText; token = ParseNext())
             {
                 token.Value = WebUtility.HtmlEncode(token.Value);
-                if (cssClassLookup.TryGetValue(token.Type, out string style) && !string.IsNullOrWhiteSpace(style))
+                if (cssClassLookup.TryGetValue(token.Type, out string? style) && !string.IsNullOrWhiteSpace(style))
                     builder.AppendFormat(Options.TokenFormat, token.Value, style);
                 else
                     builder.Append(token.Value);
@@ -206,7 +207,7 @@ namespace SoftCircuits.CodeColorizer
         /// Token that signifies the end of a multiline comment. Valid only after
         /// <see cref="IsBlockCommentStart(ParsingHelper)"/> returns true.
         /// </summary>
-        private string CommentEnd;
+        private string? CommentEnd;
 
         /// <summary>
         /// If this character appears within a string and is immediately followed by a quote
@@ -256,32 +257,32 @@ namespace SoftCircuits.CodeColorizer
         /// Returns true if c can appear within symbols and keywords
         /// </summary>
         /// <param name="c">Character to compare</param>
-        private bool IsSymbolChar(char c) => SymbolChars.Contains(c);
+        private bool IsSymbolChar(char c) => SymbolChars?.Contains(c) ?? false;
 
         /// <summary>
         /// Returns true if c can appear as the first character within symbols and keywords
         /// </summary>
         /// <param name="c">Character to compare</param>
-        private bool IsSymbolFirstChar(char c) => SymbolFirstChars.Contains(c);
+        private bool IsSymbolFirstChar(char c) => SymbolFirstChars?.Contains(c) ?? false;
 
         /// <summary>
         /// Returns true if s is a legal keyword
         /// </summary>
         /// <param name="s">String to compare</param>
-        private bool IsKeyword(string s) => Keywords.Contains(s);
+        private bool IsKeyword(string s) => Keywords?.Contains(s) ?? false;
 
         /// <summary>
         /// Returns true if s is a defined symbol
         /// </summary>
         /// <param name="s">String to compare</param>
-        internal bool IsSymbol(string s) => Symbols.Contains(s);
+        internal bool IsSymbol(string s) => Symbols?.Contains(s) ?? false;
 
         /// <summary>
         /// Returns true if c can appear within language operators.
         /// </summary>
         /// <param name="c">Character to compare</param>
         /// <returns>True if <paramref name="c"/> is a valid operator character.</returns>
-        internal bool IsOperatorChar(char c) => OperatorChars.Contains(c);
+        internal bool IsOperatorChar(char c) => OperatorChars?.Contains(c) ?? false;
 
         /// <summary>
         /// Returns <c>true</c> if <see cref="Helper"/> is at the start of a line comment.
@@ -291,10 +292,13 @@ namespace SoftCircuits.CodeColorizer
         {
             Debug.Assert(Helper != null);
 
-            foreach (string lineComment in LineComments)
+            if (LineComments != null)
             {
-                if (Helper.MatchesCurrentPosition(lineComment))
-                    return true;
+                foreach (string lineComment in LineComments)
+                {
+                    if (Helper.MatchesCurrentPosition(lineComment))
+                        return true;
+                }
             }
             return false;
         }
@@ -309,12 +313,15 @@ namespace SoftCircuits.CodeColorizer
         {
             Debug.Assert(Helper != null);
 
-            foreach (BlockCommentInfo comment in BlockComments)
+            if (BlockComments != null)
             {
-                if (Helper.MatchesCurrentPosition(comment.Start))
+                foreach (BlockCommentInfo comment in BlockComments)
                 {
-                    CommentEnd = comment.End;
-                    return true;
+                    if (Helper.MatchesCurrentPosition(comment.Start))
+                    {
+                        CommentEnd = comment.End;
+                        return true;
+                    }
                 }
             }
             return false;
@@ -330,12 +337,15 @@ namespace SoftCircuits.CodeColorizer
         /// <returns>True if <paramref name="c"/> is a quote character.</returns>
         private bool IsQuoteChar(char c)
         {
-            foreach (QuoteInfo quote in Quotes)
+            if (Quotes != null)
             {
-                if (quote.Character == c)
+                foreach (QuoteInfo quote in Quotes)
                 {
-                    QuoteEscapeChar = quote.Escape;
-                    return true;
+                    if (quote.Character == c)
+                    {
+                        QuoteEscapeChar = quote.Escape;
+                        return true;
+                    }
                 }
             }
             return false;

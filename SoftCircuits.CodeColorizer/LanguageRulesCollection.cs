@@ -1,10 +1,11 @@
-﻿// Copyright (c) 2020 Jonathan Wood (www.softcircuits.com)
+﻿// Copyright (c) 2020-2021 Jonathan Wood (www.softcircuits.com)
 // Licensed under the MIT license.
 //
 
 using SoftCircuits.CodeColorizer.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Xml;
@@ -42,9 +43,9 @@ namespace SoftCircuits.CodeColorizer
         /// language is not in the collection. The language name is not case-sensitive.
         /// </summary>
         /// <param name="language">Name of the language for which to return the rules.</param>
-        public LanguageRules this[string language]
+        public LanguageRules? this[string language]
         {
-            get => LanguageRuleLookup.TryGetValue(language, out LanguageRules languageRules) ?
+            get => LanguageRuleLookup.TryGetValue(language, out LanguageRules? languageRules) ?
                 languageRules :
                 null;
         }
@@ -60,7 +61,11 @@ namespace SoftCircuits.CodeColorizer
         /// <param name="name">Name of the language to get.</param>
         /// <param name="rules">Returns the requested language if this method returns <c>true</c>.</param>
         /// <returns>True if the requested language was found; otherwise, false.</returns>
+#if NETSTANDARD2_0
         public bool TryGetValue(string name, out LanguageRules rules) => LanguageRuleLookup.TryGetValue(name, out rules);
+#else
+        public bool TryGetValue(string name, [MaybeNullWhen(false)] out LanguageRules rules) => LanguageRuleLookup.TryGetValue(name, out rules);
+#endif
 
         #region File operations
 
@@ -82,67 +87,101 @@ namespace SoftCircuits.CodeColorizer
             // Load the specified XML file
             XmlDocument doc = new XmlDocument();
             doc.Load(filename);
-            XmlElement languages = doc.DocumentElement;
-            foreach (XmlElement language in languages.ChildNodes)
+            XmlElement? languages = doc.DocumentElement;
+            if (languages != null)
             {
-                LanguageRules rules = new LanguageRules()
+                foreach (XmlElement language in languages.ChildNodes)
                 {
-                    Name = language.Attributes["name"].GetValue(),
-                    CaseSensitive = language["caseSensitive"].GetBoolValue(LanguageRules.DefaultCaseSensitive),
-                    SymbolChars = language["symbolChars"].GetValue(LanguageRules.DefaultSymbolChars),
-                    SymbolFirstChars = language["symbolFirstChars"].GetValue(LanguageRules.DefaultSymbolFirstChars),
-                    OperatorChars = language["operatorChars"].GetValue(LanguageRules.DefaultOperatorChars),
+                    LanguageRules rules = new LanguageRules()
+                    {
+                        Name = language.Attributes["name"].GetValue(),
+                        CaseSensitive = language["caseSensitive"].GetBoolValue(LanguageRules.DefaultCaseSensitive),
+                        SymbolChars = language["symbolChars"].GetValue(LanguageRules.DefaultSymbolChars),
+                        SymbolFirstChars = language["symbolFirstChars"].GetValue(LanguageRules.DefaultSymbolFirstChars),
+                        OperatorChars = language["operatorChars"].GetValue(LanguageRules.DefaultOperatorChars),
 
-                };
-                if (string.IsNullOrWhiteSpace(rules.Name))
-                    throw new Exception("Language rule is missing name attribute");
+                    };
+                    if (string.IsNullOrWhiteSpace(rules.Name))
+                        throw new Exception("Language rule is missing name attribute");
 
-                // Quotes
-                rules.Quotes = new List<QuoteInfo>();
-                foreach (XmlElement element in language.SelectNodes("quotes"))
-                {
-                    string character = element.Attributes["character"].GetValue();
-                    if (character == null || character.Length != 1)
-                        throw new Exception(string.Format("Language rule missing quote character attribute, or value is not exactly one character ({0})", rules.Name));
-                    string escape = element.Attributes["escape"].GetValue(string.Empty);
-                    if (escape.Length > 1)
-                        throw new Exception(string.Format("Language rule quote escape value must be exactly one character ({0})", rules.Name));
-                    rules.Quotes.Add(new QuoteInfo(character[0], (escape.Length > 0) ? (char?)escape[0] : null));
+                    // Quotes
+                    rules.Quotes = new List<QuoteInfo>();
+                    XmlNodeList? nodes = language.SelectNodes("quotes");
+                    if (nodes != null)
+                    {
+                        foreach (XmlElement element in nodes)
+                        {
+                            string? character = element.Attributes["character"].GetValue();
+                            if (character == null || character.Length != 1)
+                                throw new Exception(string.Format("Language rule missing quote character attribute, or value is not exactly one character ({0})", rules.Name));
+                            string? escape = element.Attributes["escape"].GetValue(string.Empty);
+                            if (escape == null || escape.Length != 1)
+                                throw new Exception(string.Format("Language rule missing quote escape value, or value is not exactly one character ({0})", rules.Name));
+                            rules.Quotes.Add(new QuoteInfo(character[0], (escape.Length > 0) ? (char?)escape[0] : null));
+                        }
+                    }
+
+                    // Block Comments
+                    rules.BlockComments = new List<BlockCommentInfo>();
+                    nodes = language.SelectNodes("blockComments");
+                    if (nodes != null)
+                    {
+                        foreach (XmlElement element in nodes)
+                        {
+                            string? start = element.Attributes["start"].GetValue();
+                            if (string.IsNullOrWhiteSpace(start))
+                                throw new Exception(string.Format("Block comment start attribute is missing ({0})", rules.Name));
+                            string? end = element.Attributes["end"].GetValue();
+                            if (string.IsNullOrWhiteSpace(end))
+                                throw new Exception(string.Format("Block comment end attribute is missing ({0})", rules.Name));
+                            rules.BlockComments.Add(new BlockCommentInfo(start, end));
+                        }
+                    }
+
+                    // Line Comments
+                    rules.LineComments = new List<string>();
+                    nodes = language.SelectNodes("lineComments");
+                    if (nodes != null)
+                    {
+                        foreach (XmlElement element in nodes)
+                        {
+                            string? value = element.GetValue();
+                            if (value != null)
+                                rules.LineComments.Add(value);
+                        }
+                    }
+
+                    // Keywords
+                    XmlElement? keywords = language["keywords"];
+                    rules.Keywords = new List<string>();
+                    if (keywords != null)
+                    {
+                        foreach (XmlElement keyword in keywords.ChildNodes)
+                        {
+                            string? value = keyword.GetValue();
+                            if (value != null)
+                                rules.Keywords.Add(value);
+                        }
+                    }
+
+                    // Symbols
+                    XmlElement? symbols = language["symbols"];
+                    rules.Symbols = new List<string>();
+                    if (symbols != null)
+                    {
+                        foreach (XmlElement symbol in symbols.ChildNodes)
+                        {
+                            string? s = symbol.GetValue();
+                            if (!string.IsNullOrEmpty(s))
+                                rules.Symbols.Add(s);
+                        }
+                    }
+
+                    // Add to collection
+                    if (LanguageRuleLookup.TryGetValue(rules.Name, out LanguageRules? languageRules))
+                        throw new Exception($"Duplicate language name '{rules.Name}' in '{filename}'.");
+                    LanguageRuleLookup.Add(rules.Name, rules);
                 }
-                // Block Comments
-                rules.BlockComments = new List<BlockCommentInfo>();
-                foreach (XmlElement element in language.SelectNodes("blockComments"))
-                {
-                    string start = element.Attributes["start"].GetValue();
-                    if (string.IsNullOrWhiteSpace(start))
-                        throw new Exception(string.Format("Block comment start attribute is missing ({0})", rules.Name));
-                    string end = element.Attributes["end"].GetValue();
-                    if (string.IsNullOrWhiteSpace(end))
-                        throw new Exception(string.Format("Block comment end attribute is missing ({0})", rules.Name));
-                    rules.BlockComments.Add(new BlockCommentInfo(start, end));
-                }
-
-                // Line Comments
-                rules.LineComments = new List<string>();
-                foreach (XmlElement element in language.SelectNodes("lineComments"))
-                    rules.LineComments.Add(element.GetValue());
-
-                // Keywords
-                XmlElement keywords = language["keywords"];
-                rules.Keywords = new List<string>();
-                foreach (XmlElement keyword in keywords.ChildNodes)
-                    rules.Keywords.Add(keyword.GetValue());
-
-                // Symbols
-                XmlElement symbols = language["symbols"];
-                rules.Symbols = new List<string>();
-                foreach (XmlElement symbol in symbols.ChildNodes)
-                    rules.Symbols.Add(symbol.GetValue());
-
-                // Add to collection
-                if (LanguageRuleLookup.TryGetValue(rules.Name, out LanguageRules languageRules))
-                    throw new Exception($"Duplicate language name '{rules.Name}' in '{filename}'.");
-                LanguageRuleLookup.Add(rules.Name, rules);
             }
         }
 
@@ -156,28 +195,34 @@ namespace SoftCircuits.CodeColorizer
                 throw new ArgumentNullException(nameof(filename));
 
             XmlDocument doc = new XmlDocument();
-            XmlElement languages = (XmlElement)doc.AppendChild(doc.CreateElement("languages"));
+            XmlElement languages = doc.CreateElement("languages");
+            doc.AppendChild(languages);
 
             foreach (LanguageRules rules in LanguageRuleLookup.Values)
             {
-                XmlElement language = (XmlElement)languages.AppendChild(doc.CreateElement("language"));
+                XmlElement language = doc.CreateElement("language");
+                languages.AppendChild(language);
                 language.SetAttribute("name", rules.Name);
 
-                XmlElement element = (XmlElement)language.AppendChild(doc.CreateElement("caseSensitive"));
+                XmlElement element = doc.CreateElement("caseSensitive");
+                language.AppendChild(element);
                 element.InnerText = rules.CaseSensitive.ToString();
-                element = (XmlElement)language.AppendChild(doc.CreateElement("symbolChars"));
-                element.InnerText = rules.SymbolChars;
-                element = (XmlElement)language.AppendChild(doc.CreateElement("symbolFirstChars"));
-                element.InnerText = rules.SymbolFirstChars;
-                element = (XmlElement)language.AppendChild(doc.CreateElement("operatorChars"));
-                element.InnerText = rules.OperatorChars;
+                element = doc.CreateElement("symbolChars");
+                language.AppendChild(element);
+                element.InnerText = rules.SymbolChars ?? string.Empty;
+                element = doc.CreateElement("symbolFirstChars");
+                language.AppendChild(element);
+                element.InnerText = rules.SymbolFirstChars ?? string.Empty;
+                element = doc.CreateElement("operatorChars");
+                language.AppendChild(element);
+                element.InnerText = rules.OperatorChars ?? string.Empty;
 
                 if (rules.Quotes != null)
                 {
                     foreach (QuoteInfo quote in rules.Quotes)
                     {
-                        element = (XmlElement)language.AppendChild(doc.CreateElement("quotes"));
-                        element.SetAttribute("character", quote.Character.ToString());
+                        element = doc.CreateElement("quotes");
+                        language.AppendChild(element);
                         if (quote.Escape != null)
                             element.SetAttribute("escape", quote.Escape.ToString());
                     }
@@ -187,7 +232,8 @@ namespace SoftCircuits.CodeColorizer
                 {
                     foreach (BlockCommentInfo comment in rules.BlockComments)
                     {
-                        element = (XmlElement)language.AppendChild(doc.CreateElement("blockComments"));
+                        element = doc.CreateElement("blockComments");
+                        language.AppendChild(element);
                         element.SetAttribute("start", comment.Start);
                         element.SetAttribute("end", comment.End);
                     }
@@ -197,38 +243,45 @@ namespace SoftCircuits.CodeColorizer
                 {
                     foreach (string comment in rules.LineComments)
                     {
-                        element = (XmlElement)language.AppendChild(doc.CreateElement("lineComments"));
+                        element = doc.CreateElement("lineComments");
+                        language.AppendChild(element);
                         element.InnerText = comment;
                     }
                 }
 
                 if (rules.Keywords != null)
                 {
-                    XmlElement keywords = (XmlElement)language.AppendChild(doc.CreateElement("keywords"));
+                    XmlElement keywords = doc.CreateElement("keywords");
+                    language.AppendChild(keywords);
                     foreach (string keyword in rules.Keywords)
                     {
-                        element = (XmlElement)keywords.AppendChild(doc.CreateElement("keyword"));
+                        element = doc.CreateElement("keyword");
+                        keywords.AppendChild(element);
                         element.InnerText = keyword;
                     }
                 }
 
                 if (rules.Symbols != null)
                 {
-                    XmlElement symbols = (XmlElement)language.AppendChild(doc.CreateElement("symbols"));
+                    XmlElement symbols = doc.CreateElement("symbols");
+                    language.AppendChild(symbols);
                     foreach (string symbol in rules.Symbols)
                     {
-                        element = (XmlElement)symbols.AppendChild(doc.CreateElement("symbol"));
+                        element = doc.CreateElement("symbol");
+                        symbols.AppendChild(element);
                         element.InnerText = symbol;
                     }
                 }
             }
 
-            using XmlTextWriter writer = new XmlTextWriter(filename, Encoding.UTF8);
-            writer.Formatting = Formatting.Indented;
+            using XmlTextWriter writer = new XmlTextWriter(filename, Encoding.UTF8)
+            {
+                Formatting = Formatting.Indented
+            };
             doc.Save(writer);
         }
 
-        #endregion
+#endregion
 
     }
 }

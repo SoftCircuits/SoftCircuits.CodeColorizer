@@ -1,4 +1,4 @@
-// Copyright (c) 2020 Jonathan Wood (www.softcircuits.com)
+// Copyright (c) 2020-2021 Jonathan Wood (www.softcircuits.com)
 // Licensed under the MIT license.
 //
 
@@ -135,7 +135,7 @@ int func(int i, double d)
 }
 ";
 
-        private CodeColorizer GetColorizer(LanguageRules rules) => new CodeColorizer(rules)
+        private static CodeColorizer GetColorizer(LanguageRules rules) => new CodeColorizer(rules)
         {
             CommentCssClass = "comment",
             KeywordCssClass = "keyword",
